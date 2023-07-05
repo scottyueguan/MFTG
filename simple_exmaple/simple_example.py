@@ -210,6 +210,14 @@ def add_point(ax, x, y, z, radius=0.005, color='r', alpha=1.0):
     ax.plot_surface(x_, y_, z_, color=color, alpha=alpha)
 
 
+def get_intersection(x_list, y_list, surf_list, mesh_x, mesh_y):
+    z_list = []
+    for x, y in zip(x_list, y_list):
+        z = linear_approximation_2d(p=x, q=y, mesh_p=mesh_x, mesh_q=mesh_y, surf=surf_list)
+        z_list.append(z)
+    return z_list
+
+
 if __name__ == "__main__":
     resolution = 500
     rho = 0.6
@@ -278,7 +286,28 @@ if __name__ == "__main__":
                                    color='r', alpha=0.3)
     ax1.plot([RSet_blue_verts[0], RSet_blue_verts[1], RSet_blue_verts[1], RSet_blue_verts[0], RSet_blue_verts[0]],
              [RSet_red_verts[1], RSet_red_verts[1], RSet_red_verts[0], RSet_red_verts[0], RSet_red_verts[1]],
-             [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.7)
+             [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.4)
+
+    # plot intersections
+    p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
+    q_list = [RSet_red_verts[0] for _ in range(len(p_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+
+    p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
+    q_list = [RSet_red_verts[1] for _ in range(len(p_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+
+    q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
+    p_list = [RSet_blue_verts[0] for _ in range(len(q_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+
+    q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
+    p_list = [RSet_blue_verts[1] for _ in range(len(q_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
 
     ax1.set_xlabel("$\mu_1(x^1)$")
     ax1.set_ylabel("$\\nu_1(y^1)$")
@@ -338,11 +367,11 @@ if __name__ == "__main__":
     ax2.plot(local_mesh_p, [np.min(local_mesh_q) - 0.05 for _ in range(len(local_mesh_p))],
              np.min(value_1_local, axis=1), color='k', alpha=0.4)
     add_point(ax=ax2, x=maxmin_x, y=np.min(local_mesh_q) - 0.05, z=maxmin_z, radius=0.01, color=mcolors['lime'], alpha=1.0)
-    ax2.plot([maxmin_x, maxmin_x], [np.min(local_mesh_q) - 0.05, maxmin_y], [maxmin_z, maxmin_z], 'g--', alpha=1.0)
+    ax2.plot([maxmin_x, maxmin_x], [np.min(local_mesh_q) - 0.05, maxmin_y], [maxmin_z, maxmin_z], 'g--', alpha=0.3)
     ax2.plot([np.min(local_mesh_p) - 0.05 for _ in range(len(local_mesh_q))], local_mesh_q,
-             np.max(value_1_local, axis=0), color='k', alpha=1.0)
+             np.max(value_1_local, axis=0), color='k', alpha=0.4)
     add_point(ax=ax2, x=np.min(local_mesh_p) - 0.05, y=minmax_y, z=minmax_z, radius=0.01, color=mcolors['yellow'], alpha=1.0)
-    ax2.plot([np.min(local_mesh_p) - 0.05, minmax_x], [minmax_y, minmax_y], [minmax_z, minmax_z], 'y--', alpha=0.2)
+    ax2.plot([np.min(local_mesh_p) - 0.05, minmax_x], [minmax_y, minmax_y], [minmax_z, minmax_z], 'y--', alpha=0.3)
 
     ax2.set_xlabel("$\mu_0(x^1)$")
     ax2.set_ylabel("$\\nu_0(y^1)$")

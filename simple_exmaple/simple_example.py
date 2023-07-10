@@ -70,24 +70,31 @@ def visualize_blue_Rset(mu, nu, rho):
     p_vertices = generate_blue_Rset(mu=mu, nu=nu, rho=rho)
     plt.figure()
     plt.plot(np.linspace(0, 1, 50), 1 - np.linspace(0, 1, 50), 'k')
-    plt.plot(mu[0], mu[1], 'bo', markersize=15)
-    plt.plot(p_vertices, 1 - p_vertices, 'b', linewidth=5)
-
+    plt.plot(mu[0], mu[1], 'bo', markersize=7)
+    plt.plot(p_vertices, 1 - p_vertices, 'b', linewidth=3)
+    plt.legend(["Simplex", "Initial Distribution", "Reachable Set"])
     plt.xlabel("$\mu(x^1)$")
     plt.ylabel("$\mu(x^2)$")
-    plt.show()
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.gca().set_aspect("equal")
+    plt.savefig('figures/simple_example_Blue_RSet.svg', format='svg', dpi=800)
 
 
 def visualize_red_Rset(mu, nu, rho):
     q_vertices = generate_red_Rset(mu=mu, nu=nu, rho=rho)
     plt.figure()
     plt.plot(np.linspace(0, 1, 50), 1 - np.linspace(0, 1, 50), 'k')
-    plt.plot(nu[0], nu[1], 'ro', markersize=15)
-    plt.plot(q_vertices, 1 - q_vertices, mcolors['red'], linewidth=5)
+    plt.plot(nu[0], nu[1], 'ro', markersize=7)
+    plt.plot(q_vertices, 1 - q_vertices, mcolors['red'], linewidth=3)
+    plt.legend(["Simplex", "Initial Distribution", "Reachable Set"])
+    plt.xlabel("$\\nu(y^1)$")
+    plt.ylabel("$\\nu(y^2)$")
 
-    plt.xlabel("$\\nu(x^1)$")
-    plt.ylabel("$\\nu(x^2)$")
-    plt.show()
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.gca().set_aspect("equal")
+    plt.savefig('figures/simple_example_Red_RSet.svg', format='svg', dpi=800)
 
 
 def reward(mu, nu, rho):
@@ -114,9 +121,12 @@ def max_min(value_matrix):
     :param value_matrix: row player maximize, column player minimize
     :return: value
     """
-    f_min = np.min(value_matrix, axis=1)
-    opt_value = np.max(f_min)
-    return opt_value
+    f_min_indices = np.argmin(value_matrix, axis=1)
+    f_min = [value_matrix[i, min_index] for i, min_index in enumerate(f_min_indices)]
+    argmax_index = np.argmax(f_min)
+    argmin_index = f_min_indices[argmax_index]
+    opt_value = f_min[argmax_index]
+    return opt_value, argmax_index, argmin_index
 
 
 def compute_v1(res_p1: int, res_q1: int, rho):
@@ -124,13 +134,21 @@ def compute_v1(res_p1: int, res_q1: int, rho):
     mesh_q = np.linspace(0, 1, res_q1 + 1)
 
     value_1 = np.zeros((res_p1 + 1, res_q1 + 1))
+    policy_p1 = [[] for _ in range(res_p1 + 2)]
+    policy_q1 = [[] for _ in range(res_p1 + 2)]
 
     for i, p in enumerate(mesh_p):
         for j, q in enumerate(mesh_q):
-            RSet_verts = generate_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
-            value_1[i, j] = 1 - RSet_verts[0]
+            RSet_blue_verts = generate_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
+            RSet_red_verts = generate_red_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
+            value_1[i, j] = 1 - RSet_blue_verts[0]
+            policy_p1[i].append(RSet_blue_verts[0])
+            policy_q1[i].append(RSet_red_verts[1])
 
-    return mesh_p, mesh_q, value_1
+    maxmin_policies = [policy_p1, policy_q1]
+    minmax_policies = [policy_p1, policy_q1]
+
+    return mesh_p, mesh_q, value_1, maxmin_policies, minmax_policies
 
 
 def construct_value_matrix(p_start, p_end, q_start, q_end, mesh_p, mesh_q, original_value_matrix):
@@ -165,6 +183,9 @@ def compute_v0(value_info_1: list, res_p0: int, res_q0: int, rho):
     maxmin_value_0 = np.zeros((res_p0 + 1, res_q0 + 1))
     minmax_value_0 = np.zeros((res_p0 + 1, res_q0 + 1))
 
+    maxmin_policy_p0, minmax_policy_p0 = [[] for _ in range(res_p0 + 2)], [[] for _ in range(res_p0 + 2)]
+    maxmin_policy_q0, minmax_policy_q0 = [[] for _ in range(res_p0 + 2)], [[] for _ in range(res_p0 + 2)]
+
     for i, p in enumerate(mesh_p):
         for j, q in enumerate(mesh_q):
             RSet_blue_verts = generate_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
@@ -176,14 +197,23 @@ def compute_v0(value_info_1: list, res_p0: int, res_q0: int, rho):
                                                         mesh_p=mesh_p1, mesh_q=mesh_q1,
                                                         original_value_matrix=value_1)
 
-            maxmin_value_0[i, j] = max_min(value_matrix=value_1_temp)
-            minmax_value_0[i, j] = -max_min(value_matrix=-value_1_temp.transpose())
+            maxmin_value_0[i, j], maxmin_max_index, maxmin_min_index = max_min(value_matrix=value_1_temp)
+            tmp, minmax_min_index, minmax_max_index = max_min(value_matrix=-value_1_temp.transpose())
+            minmax_value_0[i, j] = - tmp
 
-            diff = abs(minmax_value_0[i, j] - maxmin_value_0[i, j])
+            maxmin_policy_p0[i].append(mesh_p[maxmin_max_index])
+            maxmin_policy_q0[i].append(mesh_q[maxmin_min_index])
+            minmax_policy_p0[i].append(mesh_p[minmax_max_index])
+            minmax_policy_q0[i].append(mesh_q[minmax_min_index])
+
+            # diff = abs(minmax_value_0[i, j] - maxmin_value_0[i, j])
             # if diff > 1e-3:
             #     print("value difference {}".format(diff))
 
-    return mesh_p, mesh_q, maxmin_value_0, minmax_value_0
+    maxmin_policies = [maxmin_policy_p0, maxmin_policy_q0]
+    minmax_policies = [minmax_policy_p0, minmax_policy_q0]
+
+    return mesh_p, mesh_q, maxmin_value_0, minmax_value_0, maxmin_policies, minmax_policies
 
 
 # def add_point(ax, x, y, z, fc = None, ec = None, radius = 0.005):
@@ -197,7 +227,7 @@ def compute_v0(value_info_1: list, res_p0: int, res_q0: int, rho):
 #        ax.add_patch(p)
 #        art3d.pathpatch_2d_to_3d(p, z=z0, zdir=a)
 
-def add_point(ax, x, y, z, radius=0.005, color='r', alpha=1.0):
+def add_point(ax, x, y, z, radius=0.005, color='r', alpha=1.0, zorder=5.0):
     u = np.linspace(0, 2 * np.pi, 100)
     v = np.linspace(0, np.pi, 100)
 
@@ -207,7 +237,7 @@ def add_point(ax, x, y, z, radius=0.005, color='r', alpha=1.0):
     x_ = ratio[0] * radius * np.outer(np.cos(u), np.sin(v)) + x
     y_ = ratio[1] * radius * np.outer(np.sin(u), np.sin(v)) + y
     z_ = ratio[2] * radius * np.outer(np.ones(np.size(u)), np.cos(v)) + z
-    ax.plot_surface(x_, y_, z_, color=color, alpha=alpha)
+    ax.plot_surface(x_, y_, z_, color=color, alpha=alpha, zorder=zorder)
 
 
 def get_intersection(x_list, y_list, surf_list, mesh_x, mesh_y):
@@ -219,26 +249,33 @@ def get_intersection(x_list, y_list, surf_list, mesh_x, mesh_y):
 
 
 if __name__ == "__main__":
-    resolution = 500
+    resolution = 10
     rho = 0.6
 
     # Discretize and solve
-    # X1, Y1, value_1 = compute_v1(res_p1=resolution, res_q1=resolution, rho=rho)
-    # X0, Y0, maxmin_value, minmax_value = compute_v0(value_info_1=[X1, Y1, value_1],
-    #                                                 res_p0=resolution, res_q0=resolution, rho=rho)
-    # data = [[X1, Y1, value_1], [X0, Y0, maxmin_value, minmax_value]]
-    # with open("data/simple_example_{}_{}.pkl".format(rho, resolution), "wb") as f:
-    #     pkl.dump(data, f)
+    X1, Y1, value_1, maxmin_policies_1, minmax_policies_1 = compute_v1(res_p1=resolution, res_q1=resolution, rho=rho)
+    X0, Y0, maxmin_value_0, minmax_value_0, maxmin_policies_0, minmax_policies_0 = compute_v0(
+        value_info_1=[X1, Y1, value_1],
+        res_p0=resolution, res_q0=resolution, rho=rho)
+    data = [[X1, Y1, value_1], [X0, Y0, maxmin_value_0, minmax_value_0]]
+    with open("data/simple_example_{}_{}.pkl".format(rho, resolution), "wb") as f:
+        pkl.dump(data, f)
 
     # Load data
     with open("data/simple_example_{}_{}.pkl".format(rho, resolution), "rb") as f:
         data = pkl.load(f)
         X1, Y1, value_1 = data[0]
-        X0, Y0, maxmin_value, minmax_value = data[1]
+        X0, Y0, maxmin_value_0, minmax_value_0 = data[1]
 
     # visualize point optimization
-    p = 0.96
-    q = 0.04
+    p = 0.9
+    q = 0.1
+
+    if p not in X0 or q not in Y0:
+        raise Exception("p or q not on the mesh at time 0!")
+
+    visualize_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
+    visualize_red_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
 
     RSet_blue_verts = generate_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
     RSet_red_verts = generate_red_Rset(mu=[p, 1 - p], nu=[q, 1 - q], rho=rho)
@@ -268,51 +305,51 @@ if __name__ == "__main__":
     cut_surf_p1 = ax1.plot_surface(cutX, cutY,
                                    np.array([[h0, h1],
                                              [h0, h1]]),
-                                   color='r', alpha=0.3)
+                                   color='r', alpha=0.1)
     cutX, cutY = np.meshgrid([RSet_blue_verts[1]], [RSet_red_verts[0], RSet_red_verts[1]])
     cut_surf_p2 = ax1.plot_surface(cutX, cutY,
                                    np.array([[h0, h1],
                                              [h0, h1]]),
-                                   color='r', alpha=0.3)
+                                   color='r', alpha=0.1)
     cutX, cutY = np.meshgrid([RSet_blue_verts[0], RSet_blue_verts[1]], [RSet_red_verts[0]])
     cut_surf_q1 = ax1.plot_surface(cutX, cutY,
                                    np.array([[h0, h0],
                                              [h1, h1]]),
-                                   color='r', alpha=0.3)
+                                   color='r', alpha=0.1)
     cutX, cutY = np.meshgrid([RSet_blue_verts[0], RSet_blue_verts[1]], [RSet_red_verts[1]])
     cut_surf_q1 = ax1.plot_surface(cutX, cutY,
                                    np.array([[h0, h0],
                                              [h1, h1]]),
-                                   color='r', alpha=0.3)
+                                   color='r', alpha=0.1)
     ax1.plot([RSet_blue_verts[0], RSet_blue_verts[1], RSet_blue_verts[1], RSet_blue_verts[0], RSet_blue_verts[0]],
              [RSet_red_verts[1], RSet_red_verts[1], RSet_red_verts[0], RSet_red_verts[0], RSet_red_verts[1]],
-             [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.4)
+             [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.5)
 
     # plot intersections
     p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
     q_list = [RSet_red_verts[0] for _ in range(len(p_list))]
     z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
-    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+    ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
 
     p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
     q_list = [RSet_red_verts[1] for _ in range(len(p_list))]
     z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
-    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+    ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
 
     q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
     p_list = [RSet_blue_verts[0] for _ in range(len(q_list))]
     z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
-    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+    ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
 
     q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
     p_list = [RSet_blue_verts[1] for _ in range(len(q_list))]
     z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
-    ax1.plot(p_list, q_list, z_list, mcolors['red'], alpha=0.7, linestyle="dashed")
+    ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
 
-    ax1.set_xlabel("$\mu_1(x^1)$")
-    ax1.set_ylabel("$\\nu_1(y^1)$")
+    ax1.set_xlabel("$\mu^\\rho_1(x^1)$")
+    ax1.set_ylabel("$\\nu^\\rho_1(y^1)$")
     ax1.zaxis.set_rotate_label(False)
-    ax1.set_zlabel("$J^{\\rho *}_1$", rotation=0)
+    ax1.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0)
     plt.savefig('figures/simple_example_J1.svg', format='svg', dpi=800)
 
     # Visualize value function t=0
@@ -324,23 +361,23 @@ if __name__ == "__main__":
     ax0.yaxis.pane.fill = False
     ax0.zaxis.pane.fill = False
     X, Y = np.meshgrid(X0, Y0)
-    surf_maxmin = ax0.plot_surface(X, Y, maxmin_value.transpose(), cmap=cm.coolwarm,
+    surf_maxmin = ax0.plot_surface(X, Y, maxmin_value_0.transpose(), cmap=cm.coolwarm,
                                    linewidth=0, antialiased=False)
-    surf_minmax = ax0.plot_surface(X, Y, minmax_value.transpose(), cmap=cm.coolwarm,
+    surf_minmax = ax0.plot_surface(X, Y, minmax_value_0.transpose(), cmap=cm.coolwarm,
                                    linewidth=0, antialiased=False)
 
     # plot point of interest
-    maxmin_z = linear_approximation_2d(p=p, q=q, mesh_p=X0, mesh_q=Y0, surf=maxmin_value)
-    minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=X0, mesh_q=Y0, surf=minmax_value)
+    maxmin_z = linear_approximation_2d(p=p, q=q, mesh_p=X0, mesh_q=Y0, surf=maxmin_value_0)
+    minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=X0, mesh_q=Y0, surf=minmax_value_0)
 
     add_point(ax=ax0, x=p, y=q, z=maxmin_z, radius=0.02, color=mcolors['lime'])
     add_point(ax=ax0, x=p, y=q, z=minmax_z, radius=0.02, color=mcolors['yellow'])
     # ax0.plot([p, p], [q, q], [maxmin_z, minmax_z], 'b--')
 
-    ax0.set_xlabel("$\mu_0(x^1)$")
-    ax0.set_ylabel("$\\nu_0(y^1)$")
+    ax0.set_xlabel("$\mu^\\rho_0(x^1)$")
+    ax0.set_ylabel("$\\nu^\\rho_0(y^1)$")
     ax0.zaxis.set_rotate_label(False)
-    ax0.set_zlabel("$J^{\\rho *}_0$", rotation=0)
+    ax0.set_zlabel("$J^{\\rho *}_{\mathrm{cor},0}$", rotation=0)
     plt.savefig('figures/simple_example_J0.svg', format='svg', dpi=800)
 
     # Visualize local value function t=0
@@ -353,7 +390,7 @@ if __name__ == "__main__":
     ax2.zaxis.pane.fill = False
     X, Y = np.meshgrid(local_mesh_p, local_mesh_q)
     surf_local = ax2.plot_surface(X, Y, value_1_local.transpose(), cmap=cm.coolwarm,
-                                  linewidth=0, antialiased=False)
+                                  linewidth=0, antialiased=False, zorder=3.1)
 
     # plot point of interest
     maxmin_index = np.where(value_1_local == maxmin_z)
@@ -365,18 +402,45 @@ if __name__ == "__main__":
     add_point(ax=ax2, x=minmax_x, y=minmax_y, z=minmax_z, radius=0.01, color=mcolors['yellow'])
 
     ax2.plot(local_mesh_p, [np.min(local_mesh_q) - 0.05 for _ in range(len(local_mesh_p))],
-             np.min(value_1_local, axis=1), color='k', alpha=0.4)
-    add_point(ax=ax2, x=maxmin_x, y=np.min(local_mesh_q) - 0.05, z=maxmin_z, radius=0.01, color=mcolors['lime'], alpha=1.0)
+             np.min(value_1_local, axis=1), color='k', alpha=0.8)
+    add_point(ax=ax2, x=maxmin_x, y=np.min(local_mesh_q) - 0.05, z=maxmin_z, radius=0.01, color=mcolors['lime'],
+              alpha=1.0, zorder=4.1)
     ax2.plot([maxmin_x, maxmin_x], [np.min(local_mesh_q) - 0.05, maxmin_y], [maxmin_z, maxmin_z], 'g--', alpha=0.3)
     ax2.plot([np.min(local_mesh_p) - 0.05 for _ in range(len(local_mesh_q))], local_mesh_q,
-             np.max(value_1_local, axis=0), color='k', alpha=0.4)
-    add_point(ax=ax2, x=np.min(local_mesh_p) - 0.05, y=minmax_y, z=minmax_z, radius=0.01, color=mcolors['yellow'], alpha=1.0)
+             np.max(value_1_local, axis=0), color='k', alpha=0.8)
+    add_point(ax=ax2, x=np.min(local_mesh_p) - 0.05, y=minmax_y, z=minmax_z, radius=0.01, color=mcolors['yellow'],
+              alpha=1.0, zorder=4.1)
     ax2.plot([np.min(local_mesh_p) - 0.05, minmax_x], [minmax_y, minmax_y], [minmax_z, minmax_z], 'y--', alpha=0.3)
 
-    ax2.set_xlabel("$\mu_0(x^1)$")
-    ax2.set_ylabel("$\\nu_0(y^1)$")
+    # plot intersections
+    p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
+    q_list = [RSet_red_verts[0] for _ in range(len(p_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax2.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.3, linestyle="dashed", zorder=3.1)
+
+    p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
+    q_list = [RSet_red_verts[1] for _ in range(len(p_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax2.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.3, linestyle="dashed", zorder=3.1)
+
+    q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
+    p_list = [RSet_blue_verts[0] for _ in range(len(q_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax2.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.3, linestyle="dashed", zorder=3.1)
+
+    q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
+    p_list = [RSet_blue_verts[1] for _ in range(len(q_list))]
+    z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=X1, mesh_y=Y1)
+    ax2.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.3, linestyle="dashed", zorder=3.1)
+
+    ax2.plot([RSet_blue_verts[0], RSet_blue_verts[1], RSet_blue_verts[1], RSet_blue_verts[0], RSet_blue_verts[0]],
+             [RSet_red_verts[1], RSet_red_verts[1], RSet_red_verts[0], RSet_red_verts[0], RSet_red_verts[1]],
+             [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.4, zorder=2.1)
+
+    ax2.set_xlabel("$\mu^\\rho_1(x^1)$")
+    ax2.set_ylabel("$\\nu^\\rho_1(y^1)$")
     ax2.zaxis.set_rotate_label(False)
-    ax2.set_zlabel("$J^{\\rho *}_1$", rotation=0)
+    ax2.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0)
     plt.savefig('figures/simple_example_local_value.svg', format='svg', dpi=800)
 
     plt.show()

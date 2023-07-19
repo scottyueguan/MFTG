@@ -2,13 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import CSS4_COLORS as mcolors
 import pickle as pkl
+import os
 
-from examples import SimpleExample2
-from solver import Solver
-from visualizers import visualize_value, get_intersection
+from simple_example.examples import SimpleExample2
+from simple_example.solver import Solver
+from simple_example.visualizers import visualize_value, get_intersection
 from utils import ROOT_PATH
 
-from emp_dist import empirical_dist
+from simple_example.emp_dist import empirical_dist
 
 if __name__ == "__main__":
     SOLVE_COR = True
@@ -20,8 +21,14 @@ if __name__ == "__main__":
     rho = 0.625
 
     # save directories
-    data_path = ROOT_PATH / "simple_example/data"
-    figure_path = ROOT_PATH / "simple_example/figures"
+    data_path = ROOT_PATH / "data"
+    figure_path = ROOT_PATH / "figures"
+
+    # set up save directory
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    if not os.path.exists(figure_path):
+        os.makedirs(figure_path)
 
     example = SimpleExample2(rho=rho)
     solver = Solver(game=example, blue_resolution_list=[res, res, res], red_resolution_list=[res, res, res])

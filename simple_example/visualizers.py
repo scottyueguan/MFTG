@@ -1,4 +1,5 @@
-from examples import MFTG
+from simple_example.examples import MFTG
+from simple_example.solver import linear_approximation_2d
 import matplotlib.pyplot as plt
 from matplotlib.colors import CSS4_COLORS as mcolors
 from matplotlib import cm
@@ -60,7 +61,6 @@ def visualize_value(value, blue_mesh, red_mesh, elev=30, azim=44, roll=0, zorder
 
 
 def get_intersection(x_list, y_list, surf_list, mesh_x, mesh_y):
-    from solver import linear_approximation_2d
     z_list = []
     for x, y in zip(x_list, y_list):
         z = linear_approximation_2d(p=x, q=y, mesh_p=mesh_x, mesh_q=mesh_y, surf=surf_list)

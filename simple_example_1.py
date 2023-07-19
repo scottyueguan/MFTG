@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import CSS4_COLORS as mcolors
 import os
 
-from examples import SimpleExample1
-from solver import Solver, linear_approximation_2d
-from visualizers import visualize_value, get_intersection, visualize_blue_Rset, visualize_red_Rset, add_point
+from simple_example.examples import SimpleExample1
+from simple_example.solver import Solver, linear_approximation_2d
+from simple_example.visualizers import visualize_value, get_intersection, visualize_blue_Rset, visualize_red_Rset, add_point
 from utils import ROOT_PATH
 
 
@@ -23,8 +23,8 @@ if __name__ == "__main__":
     q = 0.04
 
     # save directories
-    data_path = ROOT_PATH/"simple_example/data"
-    figure_path = ROOT_PATH/"simple_example/figures"
+    data_path = ROOT_PATH/"data"
+    figure_path = ROOT_PATH/"figures"
 
     # set up save directory
     if not os.path.exists(data_path):

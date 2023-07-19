@@ -1,5 +1,5 @@
 import numpy as np
-from examples import MFTG
+from simple_example.examples import MFTG
 from typing import List
 import pickle as pkl
 from utils import ROOT_PATH

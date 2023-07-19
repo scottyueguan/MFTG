@@ -2,6 +2,9 @@
 
 This is the code for the numerical examples presented in the paper 
 [Zero-Sum Games between Mean-Field Teams: A Commen Information and Reachability based Analysis](https://arxiv.org/abs/2303.12243).
+<p align="center">
+<img src="figures/MFTG_Schematic.png" alt="drawing" width="500"/>
+</p>
 
 ## Installation
 - To install, `cd` into the root directory and type `pip install -r requirements.txt`
@@ -9,7 +12,7 @@ This is the code for the numerical examples presented in the paper
 
 ## Numerical Examples 1
 - Game environment is located in `simple_example/examples` as the class `SimpleExample1`.
-- To solve and plot the value functions, run `simple_example/simple_example_1.py`
+- To solve and plot the value functions, run `simple_example_1.py`
 - Options available
   - `SOLVE_COR`: solve the coordinator game via discretization if set true, else load from pkl file
   - `PLOT_VALUE`: plot the value functions if true
@@ -17,7 +20,7 @@ This is the code for the numerical examples presented in the paper
 
 ## Numerical Examples 2
 - Game environment is located in `simple_example/examples` as the class `SimpleExample2`.
-- To solve and plot the value functions, run `simple_example/simple_example_2.py`
+- To solve and plot the value functions, run `simple_example_2.py`
 - Options available
   - `SOLVE_COR`: solve the coordinator game via discretization if set true, else load from pkl file
   - `PLOT_VALUE`: plot the value functions if true

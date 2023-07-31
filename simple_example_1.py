@@ -11,7 +11,7 @@ from utils import ROOT_PATH
 
 
 if __name__ == "__main__":
-    SOLVE_COR = True
+    SOLVE_COR = False
     PLOT_VALUE = True
     PLOT_RSet = False
 
@@ -56,8 +56,8 @@ if __name__ == "__main__":
         minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
                                            surf=data["minmax_value"][0])
         # plot point of interest
-        add_point(ax=ax0, x=p, y=q, z=maxmin_z, radius=0.02, color=mcolors['lime'])
-        add_point(ax=ax0, x=p, y=q, z=minmax_z, radius=0.02, color=mcolors['yellow'])
+        # add_point(ax=ax0, x=p, y=q, z=maxmin_z, radius=0.02, color=mcolors['lime'])
+        # add_point(ax=ax0, x=p, y=q, z=minmax_z, radius=0.02, color=mcolors['yellow'])
 
         ax0.set_xlabel("$\mu^\\rho_0(x^1)$")
         ax0.set_ylabel("$\\nu^\\rho_0(y^1)$")
@@ -73,62 +73,62 @@ if __name__ == "__main__":
                               blue_mesh=mesh_p1, red_mesh=mesh_q1, elev=30, azim=44, roll=0)
 
         # plot reachable set box
-        RSet_blue_verts = example.generate_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], t=1)
-        RSet_red_verts = example.generate_red_Rset(mu=[p, 1 - p], nu=[q, 1 - q], t=1)
-        h0 = np.min(value_1)
-        h1 = 0.7 * np.min(value_1) + 0.3 * np.max(value_1)
-        ax1.plot([RSet_blue_verts[0], RSet_blue_verts[1], RSet_blue_verts[1], RSet_blue_verts[0], RSet_blue_verts[0]],
-                 [RSet_red_verts[1], RSet_red_verts[1], RSet_red_verts[0], RSet_red_verts[0], RSet_red_verts[1]],
-                 [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.5)
-
-        # plot reachable set walls
-        cutX, cutY = np.meshgrid([RSet_blue_verts[0]], [RSet_red_verts[0], RSet_red_verts[1]])
-        cut_surf_p1 = ax1.plot_surface(cutX, cutY,
-                                       np.array([[h0, h1],
-                                                 [h0, h1]]),
-                                       color='r', alpha=0.1)
-        cutX, cutY = np.meshgrid([RSet_blue_verts[1]], [RSet_red_verts[0], RSet_red_verts[1]])
-        cut_surf_p2 = ax1.plot_surface(cutX, cutY,
-                                       np.array([[h0, h1],
-                                                 [h0, h1]]),
-                                       color='r', alpha=0.1)
-        cutX, cutY = np.meshgrid([RSet_blue_verts[0], RSet_blue_verts[1]], [RSet_red_verts[0]])
-        cut_surf_q1 = ax1.plot_surface(cutX, cutY,
-                                       np.array([[h0, h0],
-                                                 [h1, h1]]),
-                                       color='r', alpha=0.1)
-        cutX, cutY = np.meshgrid([RSet_blue_verts[0], RSet_blue_verts[1]], [RSet_red_verts[1]])
-        cut_surf_q2 = ax1.plot_surface(cutX, cutY,
-                                       np.array([[h0, h0],
-                                                 [h1, h1]]),
-                                       color='r', alpha=0.1)
-
-        # plot intersection between RSet wall and the surface
-        p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
-        q_list = [RSet_red_verts[0] for _ in range(len(p_list))]
-        z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
-        ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
-
-        p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
-        q_list = [RSet_red_verts[1] for _ in range(len(p_list))]
-        z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
-        ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
-
-        q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
-        p_list = [RSet_blue_verts[0] for _ in range(len(q_list))]
-        z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
-        ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
-
-        q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
-        p_list = [RSet_blue_verts[1] for _ in range(len(q_list))]
-        z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
-        ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
+        # RSet_blue_verts = example.generate_blue_Rset(mu=[p, 1 - p], nu=[q, 1 - q], t=1)
+        # RSet_red_verts = example.generate_red_Rset(mu=[p, 1 - p], nu=[q, 1 - q], t=1)
+        # h0 = np.min(value_1)
+        # h1 = 0.7 * np.min(value_1) + 0.3 * np.max(value_1)
+        # ax1.plot([RSet_blue_verts[0], RSet_blue_verts[1], RSet_blue_verts[1], RSet_blue_verts[0], RSet_blue_verts[0]],
+        #          [RSet_red_verts[1], RSet_red_verts[1], RSet_red_verts[0], RSet_red_verts[0], RSet_red_verts[1]],
+        #          [h0, h0, h0, h0, h0], mcolors['red'], alpha=0.5)
+        #
+        # # plot reachable set walls
+        # cutX, cutY = np.meshgrid([RSet_blue_verts[0]], [RSet_red_verts[0], RSet_red_verts[1]])
+        # cut_surf_p1 = ax1.plot_surface(cutX, cutY,
+        #                                np.array([[h0, h1],
+        #                                          [h0, h1]]),
+        #                                color='r', alpha=0.1)
+        # cutX, cutY = np.meshgrid([RSet_blue_verts[1]], [RSet_red_verts[0], RSet_red_verts[1]])
+        # cut_surf_p2 = ax1.plot_surface(cutX, cutY,
+        #                                np.array([[h0, h1],
+        #                                          [h0, h1]]),
+        #                                color='r', alpha=0.1)
+        # cutX, cutY = np.meshgrid([RSet_blue_verts[0], RSet_blue_verts[1]], [RSet_red_verts[0]])
+        # cut_surf_q1 = ax1.plot_surface(cutX, cutY,
+        #                                np.array([[h0, h0],
+        #                                          [h1, h1]]),
+        #                                color='r', alpha=0.1)
+        # cutX, cutY = np.meshgrid([RSet_blue_verts[0], RSet_blue_verts[1]], [RSet_red_verts[1]])
+        # cut_surf_q2 = ax1.plot_surface(cutX, cutY,
+        #                                np.array([[h0, h0],
+        #                                          [h1, h1]]),
+        #                                color='r', alpha=0.1)
+        #
+        # # plot intersection between RSet wall and the surface
+        # p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
+        # q_list = [RSet_red_verts[0] for _ in range(len(p_list))]
+        # z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
+        # ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
+        #
+        # p_list = np.linspace(RSet_blue_verts[0], RSet_blue_verts[1], 50)
+        # q_list = [RSet_red_verts[1] for _ in range(len(p_list))]
+        # z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
+        # ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
+        #
+        # q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
+        # p_list = [RSet_blue_verts[0] for _ in range(len(q_list))]
+        # z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
+        # ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
+        #
+        # q_list = np.linspace(RSet_red_verts[0], RSet_red_verts[1], 50)
+        # p_list = [RSet_blue_verts[1] for _ in range(len(q_list))]
+        # z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=value_1, mesh_x=mesh_p1, mesh_y=mesh_q1)
+        # ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
 
         # set labels
         ax1.set_xlabel("$\mu^\\rho_1(x^1)$")
         ax1.set_ylabel("$\\nu^\\rho_1(y^1)$")
         ax1.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0)
-        plt.savefig(figure_path/'simple_example_J1.svg', format='svg', dpi=800)
+        plt.savefig(figure_path/'simple_example1_J1.svg', format='svg', dpi=800)
 
         ############################# value at t = 2 #############################
         value_2 = data["maxmin_value"][2]

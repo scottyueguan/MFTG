@@ -132,6 +132,71 @@ class SimpleExample2(MFTG):
                          n_blue_actions=2, n_red_actions=2,
                          rho=rho, Tf=2)
 
+    def red_dynamics(self, y, v, y_prime, mu, nu, t=None):
+        if t == 0:
+            if y_prime == y:
+                return 1.0
+            else:
+                return 0.0
+        else:
+            if v == 0:
+                if y_prime == y:
+                    return 1.0
+                else:
+                    return 0.0
+            elif v == 1:
+                if y == 0:
+                    prob = min(5 * ((mu[0] - 1 / np.sqrt(2)) ** 2 + (mu[1] - (1 - 1 / np.sqrt(2))) ** 2), 1)
+                    if y_prime == 0:
+                        return 1 - prob
+                    else:
+                        return prob
+                else:
+                    if y_prime == 0:
+                        return 1.0
+                    else:
+                        return 0.0
+
+    def blue_dynamics(self, x, u, x_prime, mu, nu, t=None):
+        if u == 0:
+            if x == x_prime:
+                return 1.0
+            else:
+                return 0.0
+        else:
+            if x == x_prime:
+                return 0.0
+            else:
+                return 1.0
+
+    def reward(self, mu, nu, t=None):
+        if t <= 1:
+            return 0.0
+        else:
+            return -nu[1]
+
+    def generate_red_Rset(self, mu, nu, t=None):
+        if t == 0:
+            return np.array([nu[0], nu[0]])
+        else:
+            transition_matrix_list = [self.red_transition_matrix(policy=policy, mu=mu, nu=nu, t=t) for policy
+                                      in self.red_extreme_policies]
+            RSet = generate_2D_Rset(mu=nu, transition_matrix_list=transition_matrix_list)
+            return RSet
+
+    def generate_blue_Rset(self, mu, nu, t=None):
+        transition_matrix_list = [self.blue_transition_matrix(policy=policy, mu=mu, nu=nu, t=t) for policy
+                                  in self.blue_extreme_policies]
+        RSet = generate_2D_Rset(mu=mu, transition_matrix_list=transition_matrix_list)
+        return RSet
+
+class SimpleExample2_bak(MFTG):
+    def __init__(self, rho):
+        super().__init__(name="simple_example2_{}".format(rho),
+                         n_blue_states=2, n_red_states=2,
+                         n_blue_actions=2, n_red_actions=2,
+                         rho=rho, Tf=2)
+
     def blue_dynamics(self, x, u, x_prime, mu, nu, t=None):
         if t == 0:
             if x_prime == x:

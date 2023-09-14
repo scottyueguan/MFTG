@@ -6,7 +6,7 @@ from matplotlib import cm
 import numpy as np
 
 
-def visualize_blue_Rset(game: MFTG, mu, nu, t, visualize=False):
+def visualize_blue_Rset(game: MFTG, mu, nu, t, save_path, visualize=False):
     p_vertices = game.generate_blue_Rset(mu=mu, nu=nu, t=t)
     plt.figure()
     plt.plot(np.linspace(0, 1, 50), 1 - np.linspace(0, 1, 50), 'k')
@@ -18,13 +18,13 @@ def visualize_blue_Rset(game: MFTG, mu, nu, t, visualize=False):
     plt.xlim([0, 1])
     plt.ylim([0, 1])
     plt.gca().set_aspect("equal")
-    plt.savefig('figures/simple_example_Blue_RSet.svg', format='svg', dpi=800)
+    plt.savefig(save_path/'simple_example_Blue_RSet.svg', format='svg', dpi=800)
 
     if visualize:
         plt.show()
 
 
-def visualize_red_Rset(game: MFTG, mu, nu, t, visualize=False):
+def visualize_red_Rset(game: MFTG, mu, nu, t, save_path, visualize=False):
     q_vertices = game.generate_red_Rset(mu=mu, nu=nu, t=t)
     plt.figure()
     plt.plot(np.linspace(0, 1, 50), 1 - np.linspace(0, 1, 50), 'k')
@@ -37,7 +37,34 @@ def visualize_red_Rset(game: MFTG, mu, nu, t, visualize=False):
     plt.xlim([0, 1])
     plt.ylim([0, 1])
     plt.gca().set_aspect("equal")
-    plt.savefig('figures/simple_example_Red_RSet.svg', format='svg', dpi=800)
+    plt.savefig(save_path/'simple_example_Red_RSet.svg', format='svg', dpi=800)
+
+    if visualize:
+        plt.show()
+
+def visualize_Rset(game: MFTG, mu, nu, t, save_path, visualize=False, offset=0.05):
+    p_vertices = game.generate_blue_Rset(mu=mu, nu=nu, t=t)
+    q_vertices = game.generate_red_Rset(mu=mu, nu=nu, t=t)
+    plt.figure()
+
+    plt.plot(np.linspace(0, 1, 50), 1 - np.linspace(0, 1, 50), 'k')
+
+    plt.plot(mu[0], mu[1], 'bo', markersize=7)
+    plt.plot(nu[0], nu[1], 'ro', markersize=7)
+    plt.plot(p_vertices, 1 - p_vertices - offset, 'b', linewidth=3)
+    plt.plot(q_vertices, 1 - q_vertices + offset, mcolors['red'], linewidth=3)
+
+    plt.plot(p_vertices, [offset /2 for _ in range(len(p_vertices))], 'b', linewidth=2, alpha=0.5)
+    plt.plot(q_vertices, [offset for _ in range(len(p_vertices))], 'r', linewidth=2, alpha=0.5)
+
+    plt.legend(["Simplex", "$\mu_0 = [0.96, 0.04]$", "$\\nu_0 = [0.04, 0.96]$", "Blue Reachable Set", "Red Reachable Set"])
+    plt.xlabel("$\mu(x^1) ~~/~~ \\nu(y^1)$")
+    plt.ylabel("$\mu(x^1) ~~/~~ \\nu(y^2)$")
+
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.gca().set_aspect("equal")
+    plt.savefig(save_path/'simple_example_RSet.svg', format='svg', dpi=800)
 
     if visualize:
         plt.show()

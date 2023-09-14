@@ -14,7 +14,7 @@ from simple_example.emp_dist import empirical_dist
 if __name__ == "__main__":
     SOLVE_COR = False
     PLOT_VALUE = False
-    SOLVE_DEVIATE = True
+    SOLVE_DEVIATE = False
     PLOT_DEVIATE = True
 
     res = 500
@@ -44,17 +44,17 @@ if __name__ == "__main__":
     # plot value functions
     if PLOT_VALUE:
         ax0 = visualize_value(value=data["maxmin_value"][0],
-                              blue_mesh=data["mesh_lists"][0][0], red_mesh=data["mesh_lists"][1][0], elev=30, azim=-130)
+                              blue_mesh=data["mesh_lists"][0][0], red_mesh=data["mesh_lists"][1][0], elev=30, azim=130)
         ax0.set_zlabel("$J^{\\rho \star}_{\mathrm{cor}, 0}$", rotation=0)
         ax0.set_xlabel("$\mu^\\rho_0(x^1)$")
         ax0.set_ylabel("$\\nu^\\rho_0(y^1)$")
         plt.savefig(figure_path / 'simple_example2_J0.svg', format='svg', dpi=800)
 
         ax1 = visualize_value(value=data["maxmin_value"][1],
-                              blue_mesh=data["mesh_lists"][0][1], red_mesh=data["mesh_lists"][1][1], elev=30, azim=-130)
+                              blue_mesh=data["mesh_lists"][0][1], red_mesh=data["mesh_lists"][1][1], elev=30, azim=130)
         ax1.set_zlabel("$J^{\\rho \star}_{\mathrm{cor}, 1}$", rotation=0)
-        ax1.set_xlabel("$\mu^\\rho_0(x^1)$")
-        ax1.set_ylabel("$\\nu^\\rho_0(y^1)$")
+        ax1.set_xlabel("$\mu^\\rho_1(x^1)$")
+        ax1.set_ylabel("$\\nu^\\rho_1(y^1)$")
         p_list, q_list = [1 / np.sqrt(2) for _ in range(51)], np.linspace(0.0, 1.0, 51)
         z_list = get_intersection(x_list=p_list, y_list=q_list, surf_list=data["maxmin_value"][1],
                                   mesh_x=data["mesh_lists"][0][1], mesh_y=data["mesh_lists"][1][1])
@@ -62,10 +62,10 @@ if __name__ == "__main__":
         plt.savefig(figure_path / 'simple_example2_J1.svg', format='svg', dpi=800)
 
         ax2 = visualize_value(value=data["maxmin_value"][2],
-                              blue_mesh=data["mesh_lists"][0][2], red_mesh=data["mesh_lists"][1][2], elev=30, azim=-130)
+                              blue_mesh=data["mesh_lists"][0][2], red_mesh=data["mesh_lists"][1][2], elev=30, azim=130)
         ax2.set_zlabel("$J^{\\rho \star}_{\mathrm{cor}, 2}$", rotation=0)
-        ax2.set_xlabel("$\mu^\\rho_0(x^1)$")
-        ax2.set_ylabel("$\\nu^\\rho_0(y^1)$")
+        ax2.set_xlabel("$\mu^\\rho_2(x^1)$")
+        ax2.set_ylabel("$\\nu^\\rho_2(y^1)$")
         plt.savefig(figure_path / 'simple_example2_J2.svg', format='svg', dpi=800)
 
         plt.show()
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # compute finite-population difference
     if SOLVE_DEVIATE:
         mu0 = [1.0, 0.0]
-        nu0 = [0.6, 0.4]
+        nu0 = [0.4, 0.6]
         n_blue_list = np.array([3, 6, 12, 30, 39, 48, 54, 60, 75, 90, 105, 120, 135, 150, 165])
         n_list = (n_blue_list / rho).astype(int)
         n_red_list = ((1 - rho) * n_list).astype(int)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         # blue_index = np.where(abs(data["mesh_lists"][0][0] - mu0[0]) < 1e-5)
         # red_index = np.where(abs(data["mesh_lists"][1][0] - nu0[0]) < 1e-5)
         # coord_game_value = data["maxmin_value"][0][blue_index, red_index]
-        coord_game_value = -nu0[1]
+        coord_game_value = -nu0[0]
 
         # compute finite population value
         blue_best_config_list = []
@@ -103,9 +103,9 @@ if __name__ == "__main__":
             assert (best_p - np.round(n_blue / np.sqrt(2)) / n_blue) < 1e-5
 
             blue_best_config_list.append([best_p, 1 - best_p])
-            best_transition_matrix = example.red_transition_matrix(policy=[[0, 1], [1, 0]],
+            best_transition_matrix = example.red_transition_matrix(policy=[[0, 1], [0, 1]],
                                                                     nu=nu0, mu=[best_p, 1 - best_p], t=1)
-            best_transition_list.append(best_transition_matrix[0, :])
+            best_transition_list.append(best_transition_matrix[1, :])
             blue_1_config_list.append(empirical_dist(N=n_blue, p=blue_identical_policy))
 
         for n_red, transition, blue_1_config in zip(n_red_list, best_transition_list, blue_1_config_list):
@@ -113,24 +113,24 @@ if __name__ == "__main__":
             n_red_on_1 = n_red - n_red_on_0
 
             # compute red against non-identical blue
-            dist = empirical_dist(N=n_red_on_0, p=transition)
+            dist = empirical_dist(N=n_red_on_1, p=transition)
             value = 0
             for node in dist:
-                n_red_on_1_prime = n_red_on_1 + node.n_list[1]
-                value -= node.prob * (n_red_on_1_prime / n_red)
+                n_red_on_0_prime = n_red_on_0 + node.n_list[0]
+                value -= node.prob * (n_red_on_0_prime / n_red)
             J_N_Opt_list.append(value)
 
             # compute red against identical blue
             value = 0
             for blue_node in blue_1_config:
                 mu1 = blue_node.emp_dist
-                transition = example.red_transition_matrix(policy=[[0, 1], [1, 0]],
-                                                            mu=mu1, nu=nu0)[0, :]
+                transition = example.red_transition_matrix(policy=[[0, 1], [0, 1]],
+                                                            mu=mu1, nu=nu0)[1, :]
 
-                red_dist = empirical_dist(N=n_red_on_0, p=transition)
+                red_dist = empirical_dist(N=n_red_on_1, p=transition)
                 for red_node in red_dist:
-                    n_red_on_1_prime = n_red_on_1 + red_node.n_list[1]
-                    value -= blue_node.prob * red_node.prob * (n_red_on_1_prime / n_red)
+                    n_red_on_0_prime = n_red_on_0 + red_node.n_list[0]
+                    value -= blue_node.prob * red_node.prob * (n_red_on_0_prime / n_red)
             J_N_Opt_blue_list.append(value)
 
         with open(data_path / "simple_example2_{}_deviation.pkl".format(rho), "wb") as f:
@@ -147,11 +147,11 @@ if __name__ == "__main__":
         # Lipschitz constant for the value function 5 is the ratio in the max function within the dynamics
         L_J = 4 * np.sqrt(2 * 5)
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(6.8, 4.2))
         ax.set_facecolor('white')
-        plt.loglog(np.array(n_blue_list),  coord_game_value - np.array(J_N_Opt_list), "ko-",
-                   label="$J^{N \star} - J^{\\rho \star}_{\mathrm{cor}}$")
-        plt.loglog(np.array(n_blue_list), np.array(J_N_Opt_list) - np.array(J_N_Opt_blue_list) , "ro-",
+        # plt.loglog(np.array(n_blue_list),  coord_game_value - np.array(J_N_Opt_list), "ko-",
+        #            label="$J^{N \star} - J^{\\rho \star}_{\mathrm{cor}}$")
+        plt.loglog(np.array(n_blue_list),   np.array(J_N_Opt_list) - np.array(J_N_Opt_blue_list), "ro-",
                    label="$J^{N \star} - \min_{\phi^{N_1}} J^{N, \phi^{N_1}, \\beta^*}$")
         plt.loglog(np.array(n_blue_list), L_J / np.sqrt(n_blue_list * rho), 'k--')
         ax.set_ylabel("Difference")

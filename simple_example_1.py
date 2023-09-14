@@ -14,7 +14,7 @@ if __name__ == "__main__":
     PLOT_VALUE = True
     PLOT_RSet = False
 
-    res = 200
+    res = 500
     rho = 0.6
 
     # visualize point optimization
@@ -44,16 +44,16 @@ if __name__ == "__main__":
 
     if PLOT_VALUE:
         ############################# value at t = 0 #############################
-        ax0 = visualize_value(value=data["maxmin_value"][0],
+        ax0 = visualize_value(value=data["maxmin_value"][1],
                               blue_mesh=data["mesh_lists"][0][0][0], red_mesh=data["mesh_lists"][1][0][0],
                               elev=30, azim=44, roll=0)
         # visualize_value(value=data["minmax_value"][0], blue_mesh=data["mesh_lists"][0][0],
         #                 red_mesh=data["mesh_lists"][1][0], ax=ax0)
 
-        maxmin_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
-                                           surf=data["maxmin_value"][0])
-        minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
-                                           surf=data["minmax_value"][0])
+        # maxmin_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
+        #                                    surf=data["maxmin_value"][0])
+        # minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
+        #                                    surf=data["minmax_value"][0])
         # plot point of interest
         # add_point(ax=ax0, x=p, y=q, z=maxmin_z, radius=0.02, color=mcolors['lime'])
         # add_point(ax=ax0, x=p, y=q, z=minmax_z, radius=0.02, color=mcolors['yellow'])

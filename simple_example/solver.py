@@ -4,6 +4,7 @@ from typing import List
 import pickle as pkl
 import itertools
 from simple_example.mftg_utils import RSet
+from tqdm import tqdm
 
 
 def max_min(value_matrix):
@@ -87,20 +88,24 @@ class Solver:
                 minmax_value_prime = self.minmax_value_list[-1]
 
             blue_mesh, red_mesh = [blue_mesh[t] for blue_mesh in self.blue_mesh_list], \
-                                  [red_mesh[t] for red_mesh in self.red_mesh_list]
+                [red_mesh[t] for red_mesh in self.red_mesh_list]
 
             maxmin_value = np.zeros((self.blue_prod_mesh_size_list[t], self.red_prod_mesh_size_list[t]))
             blue_maxmin_policy, red_maxmin_policy = [[] for _ in range(self.blue_prod_mesh_size_list[t])], \
-                                                    [[] for _ in range(self.blue_prod_mesh_size_list[t])]
+                [[] for _ in range(self.blue_prod_mesh_size_list[t])]
 
             if self.solve_red:
                 minmax_value = np.zeros((self.blue_prod_mesh_size_list[t], self.red_prod_mesh_size_list[t]))
                 blue_minmax_policy, red_minmax_policy = [[] for _ in range(self.blue_prod_mesh_size_list[t])], \
-                                                        [[] for _ in range(self.blue_prod_mesh_size_list[t])]
+                    [[] for _ in range(self.blue_prod_mesh_size_list[t])]
 
-            for i, p_list in enumerate(self.cartesian_product(blue_mesh)):
-                print(i)
-                for j, q_list in enumerate(self.cartesian_product(red_mesh)):
+            p_list_list = list(self.cartesian_product(blue_mesh))
+            for i in tqdm(range(len(p_list_list))):
+                p_list = p_list_list[i]
+
+                q_list_list = list(self.cartesian_product(red_mesh))
+                for j in range(len(q_list_list)):
+                    q_list = q_list_list[j]
                     RSet_blue_list, RSet_red_list = self.game.generate_Rset(mu_list=p_list, nu_list=q_list, t=t)
 
                     # construct mesh for the RSets
@@ -124,12 +129,12 @@ class Solver:
                                                                                                 minmax_value_prime, t)
                         tmp, minmax_min_index, minmax_max_index = max_min(value_matrix=-minmax_value_temp.transpose())
                         minmax_value[i, j] = - tmp
-                        blue_minmax_policy[i].append([p_mesh_tmp[minmax_max_index], 1 - p_mesh_tmp[minmax_max_index]])
-                        red_maxmin_policy[i].append([q_mesh_tmp[minmax_min_index], 1 - q_mesh_tmp[minmax_min_index]])
+                        blue_minmax_policy[i].append(p_mesh_tmp[minmax_max_index])
+                        red_maxmin_policy[i].append(q_mesh_tmp[minmax_min_index])
 
             self.maxmin_value_list.append(maxmin_value)
             self.blue_maxmin_strategy.append(blue_maxmin_policy)
-            self.blue_maxmin_strategy.append(red_maxmin_policy)
+            self.red_maxmin_strategy.append(red_maxmin_policy)
 
             if self.solve_red:
                 self.minmax_value_list.append(minmax_value)
@@ -213,11 +218,13 @@ class Solver:
         return mesh_list
 
     def save(self, data_path):
-        data = {"maxmin_value": self.maxmin_value_list,
+        data = {"game": self.game,
+                "mesh_lists": [self.blue_mesh_list, self.red_mesh_list],
+                "index_maps": [self.blue_map_list, self.red_map_list],
+                "maxmin_value": self.maxmin_value_list,
                 "minmax_value": self.minmax_value_list,
                 "maxmin_policies": [self.blue_maxmin_strategy, self.red_maxmin_strategy],
-                "minmax_policies": [self.blue_minmax_strategy, self.red_minmax_strategy],
-                "mesh_lists": [self.blue_mesh_list, self.red_mesh_list]}
+                "minmax_policies": [self.blue_minmax_strategy, self.red_minmax_strategy]}
         with open(data_path / "{}_{}.pkl".format(self.game.name, max(self.blue_resolution_list)),
                   "wb") as f:
             pkl.dump(data, f)

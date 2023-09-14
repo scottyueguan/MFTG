@@ -145,10 +145,10 @@ class MFTG:
 
 
 class MulticlassExample1(MFTG):
-    def __init__(self, blue_rho, red_rho):
-        super().__init__(name="MulticlassExample1", n_blue_states_list=[2, 3], n_red_states_list=[2],
+    def __init__(self, blue_rho = [0.3, 0.2], red_rho=[0.5], Tf=3):
+        super().__init__(name="MulticlassExample1", n_blue_states_list=[2, 2], n_red_states_list=[2],
                          n_blue_actions_list=[3, 2], n_red_actions_list=[2],
-                         rho_list=blue_rho + red_rho, Tf=2)
+                         rho_list=blue_rho + red_rho, Tf=Tf)
 
     def blue_dynamics(self, x: int, u: int, x_prime: int,
                       agent_type: int, mu_list: List, nu_list: List,
@@ -175,7 +175,7 @@ class MulticlassExample1(MFTG):
             if u == 0 and x == x_prime:
                 p = 1
             elif u == 1 and x != x_prime:
-                p = 0.5
+                p = 1.0
             else:
                 p = 0
         return p
@@ -214,7 +214,7 @@ class MulticlassExample1(MFTG):
         mu_list = self._reconfig_mu_list(mu_list)
         nu_list = self._reconfig_nu_list(nu_list)
 
-        r = self.blue_rho_list[0] * mu_list[0][1] + self.blue_rho_list[1] * mu_list[1][2] - \
+        r = self.blue_rho_list[0] * mu_list[0][1] + self.blue_rho_list[1] * mu_list[1][1] - \
             self.red_rho_list[0] * nu_list[0][1]
 
         return r

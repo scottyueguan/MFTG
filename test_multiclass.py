@@ -18,11 +18,11 @@ if __name__ == "__main__":
     rho_blue = [0.3, 0.2]
     rho_red = [0.5]
 
-    T = 2
+    T = 3
 
-    example = MulticlassExample1(Tf=T)
+    example = PerimeterDefenseGame(Tf=T)
     solver = Solver(game=example, blue_resolution_list=[[20 for _ in range(T+1)], [20 for _ in range(T+1)]],
-                    red_resolution_list=[[20 for _ in range(T+1)]])
+                    red_resolution_list=[[100 for _ in range(T+1)]])
 
     solver.solve()
     solver.save(data_path)

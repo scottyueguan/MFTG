@@ -225,7 +225,7 @@ class Solver:
                 "minmax_value": self.minmax_value_list,
                 "maxmin_policies": [self.blue_maxmin_strategy, self.red_maxmin_strategy],
                 "minmax_policies": [self.blue_minmax_strategy, self.red_minmax_strategy]}
-        with open(data_path / "{}_{}.pkl".format(self.game.name, max(self.blue_resolution_list)),
+        with open(data_path / "{}_{}.pkl".format(self.game.name, max(self.blue_resolution_list[0])),
                   "wb") as f:
             pkl.dump(data, f)
 

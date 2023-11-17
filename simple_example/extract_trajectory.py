@@ -22,11 +22,11 @@ def project_mesh_point(point, mesh):
 if __name__ == "__main__":
     policy_class = "maxmin_policies"
     resolution = 500
-    mu_0, nu_0 = [[0.5, 0.5], [0.1, 0.6, 0.3]], [[0.1, 0.9]]
+    mu_0, nu_0 = [[0., 1.0], [0.5, 0.5]], [[1., 0.]]
 
     config_list = [[mu_0, nu_0]]
 
-    with open("../test_data/MulticlassExample1_[10, 10, 10].pkl", "rb") as f:
+    with open("../test_data/TwoNodePerimeter_10.pkl", "rb") as f:
         data = pkl.load(f)
 
         game = data["game"]
@@ -57,6 +57,29 @@ if __name__ == "__main__":
 
         config_list.append([mu_new_list, nu_new_list])
 
+
+    blue_bar_list, red_bar_list = [[] for _ in range(game.n_blue_types)], [[] for _ in range(game.n_red_types)]
+    for config in config_list:
+        mu_list, nu_list = config[0], config[1]
+        for i, mu in enumerate(mu_list):
+            blue_bar_list[i].append([])
+            for p in mu:
+                blue_bar_list[i][-1].append(200 * p * game.blue_rho_list[i])
+
+        for j, nu in enumerate(nu_list):
+            red_bar_list[j].append([])
+            for p in nu:
+                red_bar_list[j][-1].append(200 * p * game.red_rho_list[j])
+
+
+
+
+
+
     print(config_list)
+
+    print(blue_bar_list)
+
+    print(red_bar_list)
 
     print("done!")

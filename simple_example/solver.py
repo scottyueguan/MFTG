@@ -115,9 +115,8 @@ class Solver:
                                                                                             red_mesh_prime,
                                                                                             maxmin_value_prime, t)
 
-                    maxmin_value[i, j], maxmin_max_index, maxmin_min_index = max_min(
-                        value_matrix=maxmin_value_temp)
-
+                    opt_value , maxmin_max_index, maxmin_min_index = max_min(value_matrix=maxmin_value_temp)
+                    maxmin_value[i, j] = opt_value + self.game.reward(mu_list=p_list, nu_list=q_list, t=t)
                     blue_maxmin_policy[i].append(p_mesh_tmp[maxmin_max_index])
                     red_maxmin_policy[i].append(q_mesh_tmp[maxmin_min_index])
 

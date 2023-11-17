@@ -15,13 +15,13 @@ if __name__ == "__main__":
     if not os.path.exists(data_path):
         os.makedirs(data_path)
 
-    rho_blue = [0.3, 0.2]
+    rho_blue = [0.1, 0.4]
     rho_red = [0.5]
 
-    T = 3
+    T = 2
 
-    example = PerimeterDefenseGame(Tf=T)
-    solver = Solver(game=example, blue_resolution_list=[[20 for _ in range(T+1)], [20 for _ in range(T+1)]],
+    example = PerimeterDefenseGame(Tf=T, blue_rho=rho_blue, red_rho=rho_red)
+    solver = Solver(game=example, blue_resolution_list=[[10 for _ in range(T+1)], [20 for _ in range(T+1)]],
                     red_resolution_list=[[100 for _ in range(T+1)]])
 
     solver.solve()

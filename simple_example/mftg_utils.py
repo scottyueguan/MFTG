@@ -30,8 +30,10 @@ class RSet:
 
     def get_in_points(self, points):
         if self.dim == 2:
-            start_index = np.where(points - self.min_p >= 0)[0][0]
-            end_index = np.where(points - self.max_p >= 0)[0][0]
+            start_index = np.where(points - self.min_p >= -1e-5)[0][0]
+            end_index = np.where(points - self.max_p >= -1e-5)[0][0]
+            if end_index == start_index:
+                end_index += 1
             index_list = list(range(start_index, end_index))
             point_list = [(points[i][0], 1-points[i][0]) for i in index_list]
             return index_list, point_list

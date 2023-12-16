@@ -65,14 +65,14 @@ class Solver:
         maxmin_value_tf = np.zeros((self.blue_prod_mesh_size_list[-1], self.red_prod_mesh_size_list[-1]))
 
         if self.solve_red:
-            minmax_value_tf = np.zeros((len(blue_mesh_tf), len(red_mesh_tf)))
+            minmax_value_tf = np.zeros((self.blue_prod_mesh_size_list[-1], self.red_prod_mesh_size_list[-1]))
 
         # p_list and q_list are of one dimension smaller than the mu_list and nu_list, due to the simplex constraint
         for i, p_list in enumerate(self.cartesian_product(blue_mesh_tf)):
             for j, q_list in enumerate(self.cartesian_product(red_mesh_tf)):
                 maxmin_value_tf[i, j] = self.game.reward(mu_list=p_list, nu_list=q_list, t=self.Tf)
                 if self.solve_red:
-                    minmax_value_tf[i, j] = self.game.reward(mu=p_list, nu=q_list, t=self.Tf)
+                    minmax_value_tf[i, j] = self.game.reward(mu_list=p_list, nu_list=q_list, t=self.Tf)
         self.maxmin_value_list.append(maxmin_value_tf)
 
         if self.solve_red:
@@ -224,7 +224,7 @@ class Solver:
                 "minmax_value": self.minmax_value_list,
                 "maxmin_policies": [self.blue_maxmin_strategy, self.red_maxmin_strategy],
                 "minmax_policies": [self.blue_minmax_strategy, self.red_minmax_strategy]}
-        with open(data_path / "{}_{}.pkl".format(self.game.name, max(self.blue_resolution_list[0])),
+        with open(data_path / "{}_{}.pkl".format(self.game.name, max(self.blue_resolution_list)),
                   "wb") as f:
             pkl.dump(data, f)
 

@@ -12,9 +12,9 @@ from utils import ROOT_PATH
 if __name__ == "__main__":
     SOLVE_COR = False
     PLOT_VALUE = True
-    PLOT_RSet = False
+    PLOT_RSet = True
 
-    res = 500
+    res = 10
     rho = 0.6
 
     # visualize point optimization
@@ -24,6 +24,7 @@ if __name__ == "__main__":
     # save directories
     data_path = ROOT_PATH / "test_data"
     figure_path = ROOT_PATH / "figures"
+    label_fontsize = 15
 
     # set up save directory
     if not os.path.exists(data_path):
@@ -32,7 +33,8 @@ if __name__ == "__main__":
         os.makedirs(figure_path)
 
     example = SimpleExample1(rho=rho)
-    solver = Solver(game=example, blue_resolution_list=[[res, res, res]], red_resolution_list=[[res, res, res]])
+    solver = Solver(game=example, blue_resolution_list=[[res, res, res]], red_resolution_list=[[res, res, res]],
+                    solve_red=True)
 
     # solve the game
     if SOLVE_COR:
@@ -44,23 +46,23 @@ if __name__ == "__main__":
 
     if PLOT_VALUE:
         ############################# value at t = 0 #############################
-        ax0 = visualize_value(value=data["maxmin_value"][1],
+        ax0 = visualize_value(value=data["maxmin_value"][0],
                               blue_mesh=data["mesh_lists"][0][0][0], red_mesh=data["mesh_lists"][1][0][0],
                               elev=30, azim=44, roll=0)
-        # visualize_value(value=data["minmax_value"][0], blue_mesh=data["mesh_lists"][0][0],
-        #                 red_mesh=data["mesh_lists"][1][0], ax=ax0)
+        visualize_value(value=data["minmax_value"][0],
+                        blue_mesh=data["mesh_lists"][0][0][0], red_mesh=data["mesh_lists"][1][0][0], ax=ax0)
 
-        # maxmin_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
-        #                                    surf=data["maxmin_value"][0])
-        # minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0], mesh_q=data["mesh_lists"][1][0],
-        #                                    surf=data["minmax_value"][0])
+        maxmin_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0][0], mesh_q=data["mesh_lists"][1][0][0],
+                                           surf=data["maxmin_value"][0])
+        minmax_z = linear_approximation_2d(p=p, q=q, mesh_p=data["mesh_lists"][0][0][0], mesh_q=data["mesh_lists"][1][0][0],
+                                           surf=data["minmax_value"][0])
         # plot point of interest
-        # add_point(ax=ax0, x=p, y=q, z=maxmin_z, radius=0.02, color=mcolors['lime'])
-        # add_point(ax=ax0, x=p, y=q, z=minmax_z, radius=0.02, color=mcolors['yellow'])
+        add_point(ax=ax0, x=p, y=q, z=maxmin_z, radius=0.02, color=mcolors['lime'])
+        add_point(ax=ax0, x=p, y=q, z=minmax_z, radius=0.02, color=mcolors['yellow'])
 
-        ax0.set_xlabel("$\mu^\\rho_0(x^1)$")
-        ax0.set_ylabel("$\\nu^\\rho_0(y^1)$")
-        ax0.set_zlabel("$J^{\\rho \star}_{\mathrm{cor}, 0}$", rotation=0)
+        ax0.set_xlabel("$\mu^\\rho_0(x^1)$", fontsize=label_fontsize)
+        ax0.set_ylabel("$\\nu^\\rho_0(y^1)$", fontsize=label_fontsize)
+        ax0.set_zlabel("$J^{\\rho \star}_{\mathrm{cor}, 0}$", rotation=0, fontsize=label_fontsize)
 
         plt.show()
 
@@ -131,9 +133,9 @@ if __name__ == "__main__":
         ax1.plot(p_list, q_list, z_list, mcolors['navy'], alpha=0.7, linestyle="dashed")
 
         # set labels
-        ax1.set_xlabel("$\mu^\\rho_1(x^1)$")
-        ax1.set_ylabel("$\\nu^\\rho_1(y^1)$")
-        ax1.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0)
+        ax1.set_xlabel("$\mu^\\rho_1(x^1)$", fontsize=label_fontsize)
+        ax1.set_ylabel("$\\nu^\\rho_1(y^1)$", fontsize=label_fontsize)
+        ax1.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0, fontsize=label_fontsize)
         plt.savefig(figure_path / 'simple_example1_J1.svg', format='svg', dpi=800)
 
         ############################# value at t = 2 #############################
@@ -141,9 +143,9 @@ if __name__ == "__main__":
         mesh_p2, mesh_q2 = data["mesh_lists"][0][2], data["mesh_lists"][1][2]
         ax2 = visualize_value(value=value_2,
                               blue_mesh=mesh_p2, red_mesh=mesh_q2, elev=30, azim=44, roll=0)
-        ax2.set_xlabel("$\mu^\\rho_2(x^1)$")
-        ax2.set_ylabel("$\\nu^\\rho_2(y^1)$")
-        ax2.set_zlabel("$J^{\\rho *}_{\mathrm{cor},2}$", rotation=0)
+        ax2.set_xlabel("$\mu^\\rho_2(x^1)$", fontsize=label_fontsize)
+        ax2.set_ylabel("$\\nu^\\rho_2(y^1)$", fontsize=label_fontsize)
+        ax2.set_zlabel("$J^{\\rho *}_{\mathrm{cor},2}$", rotation=0, fontsize=label_fontsize)
         plt.savefig(figure_path / 'simple_example1_J2.svg', format='svg', dpi=800)
 
         ############################# visualize local value function at t=0 #############################
@@ -208,15 +210,16 @@ if __name__ == "__main__":
                  [h0, h0], mcolors['red'], alpha=0.5, zorder=2.1)
 
         ax3.zaxis.set_rotate_label(False)
-        ax3.set_xlabel("$\mu^\\rho_1(x^1)$")
-        ax3.set_ylabel("$\\nu^\\rho_1(y^1)$")
-        ax3.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0)
+        ax3.set_xlabel("$\mu^\\rho_1(x^1)$", fontsize=label_fontsize)
+        ax3.set_ylabel("$\\nu^\\rho_1(y^1)$", fontsize=label_fontsize)
+        ax3.set_zlabel("$J^{\\rho *}_{\mathrm{cor},1}$", rotation=0, fontsize=label_fontsize)
         plt.savefig(figure_path / 'simple_example1_local_value.svg', format='svg', dpi=800)
         plt.show()
 
     if PLOT_RSet:
         visualize_blue_Rset(game=example, mu=[p, 1 - p], nu=[q, 1 - q], t=0, visualize=True, save_path=figure_path)
         visualize_red_Rset(game=example, mu=[p, 1 - p], nu=[q, 1 - q], t=0, visualize=True, save_path=figure_path)
-        visualize_Rset(game=example, mu=[p, 1 - p], nu=[q, 1 - q], t=0, offset=0.02,visualize=True, save_path=figure_path)
+        visualize_Rset(game=example, mu=[p, 1 - p], nu=[q, 1 - q], t=0, offset=0.02,visualize=True,
+                       save_path=figure_path, label_fontsize=label_fontsize)
 
     print("done!")

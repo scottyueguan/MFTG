@@ -42,7 +42,7 @@ def visualize_red_Rset(game: MFTG, mu, nu, t, save_path, visualize=False):
     if visualize:
         plt.show()
 
-def visualize_Rset(game: MFTG, mu, nu, t, save_path, visualize=False, offset=0.05):
+def visualize_Rset(game: MFTG, mu, nu, t, save_path, visualize=False, offset=0.05, label_fontsize=15):
     p_vertices = game.generate_blue_Rset(mu=mu, nu=nu, t=t)
     q_vertices = game.generate_red_Rset(mu=mu, nu=nu, t=t)
     plt.figure()
@@ -58,8 +58,8 @@ def visualize_Rset(game: MFTG, mu, nu, t, save_path, visualize=False, offset=0.0
     plt.plot(q_vertices, [offset for _ in range(len(p_vertices))], 'r', linewidth=2, alpha=0.5)
 
     plt.legend(["Simplex", "$\mu_0 = [0.96, 0.04]$", "$\\nu_0 = [0.04, 0.96]$", "Blue Reachable Set", "Red Reachable Set"])
-    plt.xlabel("$\mu(x^1) ~~/~~ \\nu(y^1)$")
-    plt.ylabel("$\mu(x^1) ~~/~~ \\nu(y^2)$")
+    plt.xlabel("$\mu(x^1) ~~or~~ \\nu(y^1)$", fontsize=label_fontsize)
+    plt.ylabel("$\mu(x^1) ~~or~~ \\nu(y^2)$", fontsize=label_fontsize)
 
     plt.xlim([0, 1])
     plt.ylim([0, 1])
